@@ -67,15 +67,17 @@ export class WhatsNodeClient extends EventEmitter {
   constructor(options: ClientOptions) {
     super();
     
-    // Set default options
+    // Set default options with user options override
     this.options = {
-      authStrategy: 'qr',
       sessionPath: './whatsnode_session',
       autoReconnect: true,
       reconnectInterval: 5000,
       maxReconnectAttempts: 10,
       debug: false,
-      ...options
+      // Override defaults with user options
+      ...options,
+      // Ensure authStrategy has a default if not provided
+      authStrategy: options.authStrategy || 'qr'
     };
     
     // Generate a unique client ID

@@ -18,8 +18,7 @@ export {
   WhatsNodeMessage,
   WhatsNodeChat,
   WhatsNodeContact,
-  WhatsNodeGroup,
-  WhatsNodeStatus
+  WhatsNodeGroup
 } from './lib/whatsnode/types';
 
 export {
