@@ -1,0 +1,61 @@
+{
+  "name": "whatsnode-js",
+  "version": "1.0.0",
+  "description": "O bibliotecă JavaScript robustă pentru interacțiunea cu WhatsApp Web",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "example": "ts-node examples/basic.ts",
+    "lint": "eslint src/**/*.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gyovannyvpn123/whatsnode-js.git"
+  },
+  "keywords": [
+    "whatsapp",
+    "api",
+    "bot",
+    "client",
+    "node",
+    "javascript",
+    "typescript",
+    "baileys",
+    "whatsapp-web",
+    "whatsapp-api"
+  ],
+  "author": "gyovannyvpn123",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gyovannyvpn123/whatsnode-js/issues"
+  },
+  "homepage": "https://github.com/gyovannyvpn123/whatsnode-js#readme",
+  "dependencies": {
+    "libsignal": "^2.0.1",
+    "protobufjs": "^7.2.5",
+    "qrcode": "^1.5.3",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.5",
+    "@types/node": "^20.8.0",
+    "@types/qrcode": "^1.5.2",
+    "@types/ws": "^8.5.7",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
