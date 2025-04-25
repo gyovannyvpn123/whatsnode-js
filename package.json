@@ -40,6 +40,9 @@
     "libsignal": "^2.0.1",
     "protobufjs": "^7.2.5",
     "qrcode": "^1.5.3",
+    "fast-deep-equal": "^3.1.3"
+  },
+  "optionalDependencies": {
     "ws": "^8.14.2"
   },
   "devDependencies": {

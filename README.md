@@ -1,157 +1,199 @@
 # WhatsNode.js
 
-![WhatsNode.js Logo](https://img.shields.io/badge/WhatsNode-JS-brightgreen)
-![License MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-orange)
-
-**O bibliotecă JavaScript robustă pentru interacțiunea cu WhatsApp Web**
-
-WhatsNode.js este o bibliotecă complet funcțională care permite dezvoltatorilor să creeze roboți WhatsApp și aplicații automatizate folosind JavaScript/TypeScript. Biblioteca se conectează direct la serverele oficiale WhatsApp Web și implementează protocoalele necesare pentru autentificare și comunicare.
-
-## Caracteristici
-
-- ✅ **Conectare directă la WhatsApp Web** - Folosește WebSocket pentru a comunica direct cu serverele WhatsApp
-- ✅ **Autentificare multiplă** - Suport pentru scanare cod QR și cod de asociere
-- ✅ **API Complet** - Trimitere și primire de mesaje, imagini, video, audio, documente, locații
-- ✅ **Gestionare Grupuri** - Creare grupuri, adăugare/eliminare participanți, promovare/retrogradare administratori
-- ✅ **Gestionare Sesiuni** - Salvare și restaurare sesiuni pentru conectare rapidă
-- ✅ **Sigur și Fiabil** - Implementare robustă bazată pe principiile Baileys.js
-- ✅ **Complet Tipizat** - Suport TypeScript complet cu definiții de tip pentru toate funcțiile
+O bibliotecă JavaScript robustă pentru interacțiunea cu WhatsApp Web. WhatsNode.js permite dezvoltatorilor să construiască boți de WhatsApp cu autentificare prin cod QR și cod de asociere.
 
 ## Instalare
 
+### În browser
 ```bash
 npm install whatsnode-js
 ```
 
-## Utilizare Rapidă
+### În Node.js
+```bash
+npm install whatsnode-js ws
+```
+
+## Caracteristici
+
+- Autentificare prin cod QR sau cod de asociere
+- Trimitere și primire de mesaje text
+- Suport pentru media (imagini, video, documente, audio)
+- Gestionare contacte și grupuri
+- Conectivitate robustă și autoreconectare
+- Salvarea și restaurarea sesiunilor
+
+## Utilizare de bază
 
 ```javascript
-import { createClient } from 'whatsnode-js';
+const { createClient } = require('whatsnode-js');
 
 // Creează un client WhatsNode
 const client = createClient({
   authStrategy: 'qr', // sau 'association-code'
-  debug: true
+  sessionPath: './whatsnode_session',
+  autoReconnect: true
 });
 
-// Ascultă evenimentul de primire cod QR
+// Gestionează evenimentele
 client.on('qr', (qr) => {
-  console.log('Scanează codul QR:', qr);
+  console.log('Scanează acest cod QR:', qr);
 });
 
-// Ascultă evenimentul de autentificare reușită
-client.on('authenticated', () => {
-  console.log('Autentificare reușită!');
-});
-
-// Ascultă evenimentul ready
 client.on('ready', () => {
-  console.log('Client gata de utilizare!');
+  console.log('Client conectat și gata de utilizare!');
   
   // Trimite un mesaj
-  client.sendMessage('123456789@c.us', 'Salut de la WhatsNode.js!');
+  client.sendMessage('40722123456@s.whatsapp.net', 'Salut de la WhatsNode.js!');
 });
 
-// Ascultă mesaje noi
 client.on('message', (message) => {
-  console.log(`Mesaj nou de la ${message.from}: ${message.body}`);
+  console.log('Mesaj primit:', message.body);
   
   // Răspunde la mesaje
-  if (message.body === '!ping') {
-    client.sendMessage(message.from, 'pong');
+  if (message.body === 'Ping') {
+    client.sendMessage(message.from, 'Pong');
   }
 });
 
-// Conectează la WhatsApp
+// Conectează clientul
 client.connect();
 ```
 
-## Autentificare
-
-### Utilizând Cod QR
+## Autentificare prin cod de asociere
 
 ```javascript
-const client = createClient({ 
-  authStrategy: 'qr' 
+const { createClient } = require('whatsnode-js');
+
+const client = createClient({
+  authStrategy: 'association-code',
+  sessionPath: './whatsnode_session'
 });
 
-client.on('qr', (qr) => {
-  // Afișează codul QR în terminal sau pe interfața web
-  console.log('Scanează codul QR:', qr);
+// Solicită un cod de asociere
+client.requestAssociationCode('40722123456');
+
+client.on('association_code_sending', (phoneNumber) => {
+  console.log(`Codul de asociere a fost trimis la ${phoneNumber}`);
+  
+  // În aplicație, ai solicita utilizatorului să introducă codul
+  const code = prompt('Introdu codul de 8 cifre primit pe WhatsApp:');
+  
+  // Autentifică cu codul introdus
+  client.authenticateWithAssociationCode(code);
 });
 
+client.on('ready', () => {
+  console.log('Client conectat și gata de utilizare!');
+});
+
+// Conectează clientul
 client.connect();
 ```
 
-### Utilizând Cod de Asociere
+## Utilizare în Node.js
+
+Pentru a utiliza WhatsNode.js în Node.js, trebuie să instalezi pachetul `ws` pentru funcționalitatea WebSocket:
+
+```bash
+npm install whatsnode-js ws
+```
+
+### Exemplu Node.js
 
 ```javascript
-const client = createClient({ 
-  authStrategy: 'association-code' 
+const { createClient } = require('whatsnode-js');
+const fs = require('fs');
+const path = require('path');
+
+// Configurare client WhatsNode
+const client = createClient({
+  authStrategy: 'qr',
+  sessionPath: './whatsnode_session',
+  autoReconnect: true,
+  debug: true
 });
 
-// Solicită codul de asociere pentru un număr de telefon
-await client.requestAssociationCode('4012345678');
+// Salvăm codul QR ca imagine pentru a-l putea scana
+client.on('qr', (qrCode) => {
+  // Dacă QR code este un data URL, salvăm imaginea
+  if (qrCode.startsWith('data:image/png;base64,')) {
+    const base64Data = qrCode.replace(/^data:image\/png;base64,/, '');
+    fs.writeFileSync('qr-code.png', base64Data, 'base64');
+    console.log('Cod QR salvat în qr-code.png');
+    console.log('Scanează codul QR cu aplicația WhatsApp de pe telefonul tău.');
+  }
+});
 
-// Autentifică-te cu codul primit pe telefon
-await client.authenticateWithAssociationCode('1-2-3-4-5-6');
+client.on('ready', () => {
+  console.log('Client conectat și gata de utilizare!');
+  
+  // Trimite un mesaj la un număr specific
+  // client.sendMessage('40722123456@s.whatsapp.net', 'Salut!');
+});
+
+client.on('message', (message) => {
+  console.log('Mesaj primit:', message.body);
+  
+  // Răspunde la mesaje
+  if (message.body === 'Ping') {
+    client.sendMessage(message.from, 'Pong');
+  }
+});
+
+// Pornește clientul
+client.connect().catch(err => console.error('Eroare:', err));
 ```
 
-## Exemple Avansate
+Un exemplu mai complex poate fi găsit în directorul `examples/` al pachetului.
 
-### Trimitere Imagine
+## API
 
-```javascript
-// Trimite o imagine locală
-await client.sendImage('123456789@c.us', '/path/to/image.jpg', 'Descriere imagine');
+### Client
 
-// Trimite o imagine de la URL
-await client.sendImageFromUrl('123456789@c.us', 'https://example.com/image.jpg', 'Descriere imagine');
-```
+- `createClient(options)` - Creează un client WhatsNode
+- `client.connect()` - Conectează clientul la WhatsApp Web
+- `client.disconnect()` - Deconectează clientul
+- `client.isClientConnected()` - Verifică dacă clientul este conectat
+- `client.isClientReady()` - Verifică dacă clientul este gata de utilizare
 
-### Creare Grup
+### Mesaje
 
-```javascript
-// Creează un grup nou cu participanți
-const group = await client.createGroup('Nume Grup', ['123456789@c.us', '987654321@c.us']);
+- `client.sendMessage(to, content)` - Trimite un mesaj text
+- `client.sendImage(to, imagePath, caption)` - Trimite o imagine
+- `client.sendImageFromUrl(to, url, caption)` - Trimite o imagine de la URL
+- `client.sendVideo(to, videoPath, caption)` - Trimite un video
+- `client.sendDocument(to, documentPath, filename)` - Trimite un document
+- `client.sendLocation(to, latitude, longitude, name)` - Trimite o locație
+- `client.sendContact(to, contactId)` - Trimite un contact
 
-// Adaugă participanți la un grup
-await client.addParticipants(group.id, ['111111111@c.us']);
+### Grupuri
 
-// Promovează participanți la admin
-await client.promoteParticipants(group.id, ['123456789@c.us']);
-```
+- `client.createGroup(name, participants)` - Creează un grup
+- `client.getGroup(groupId)` - Obține informații despre un grup
+- `client.getGroups()` - Obține lista de grupuri
+- `client.addParticipants(groupId, participants)` - Adaugă participanți în grup
+- `client.removeParticipants(groupId, participants)` - Elimină participanți din grup
+- `client.promoteParticipants(groupId, participants)` - Promovează participanți la admin
+- `client.demoteParticipants(groupId, participants)` - Retrogradează participanți de la admin
+- `client.getGroupInviteCode(groupId)` - Obține codul de invitație al grupului
 
-## Documentație API Completă
+### Contacte și chat-uri
 
-Pentru documentația API completă, consultați [documentația completă](https://github.com/gyovannyvpn123/whatsnode-js/wiki).
+- `client.getChat(chatId)` - Obține informații despre un chat
+- `client.getChats()` - Obține lista de chat-uri
+- `client.getContact(contactId)` - Obține informații despre un contact
+- `client.getContacts()` - Obține lista de contacte
 
-## Comparație cu Alternative
+### Evenimente
 
-| Funcționalitate | WhatsNode.js | Baileys | Whatsapp-web.js |
-|----------------|:------------:|:-------:|:---------------:|
-| Autentificare QR | ✅ | ✅ | ✅ |
-| Autentificare Cod Asociere | ✅ | ❌ | ❌ |
-| Suport TypeScript | ✅ | ✅ | ✅ |
-| Gestionare Media | ✅ | ✅ | ✅ |
-| Gestionare Grupuri | ✅ | ✅ | ✅ |
-| Restaurare Sesiune | ✅ | ✅ | ✅ |
-| Arhitectură Modulară | ✅ | ❌ | ❌ |
-| Multi-device Support | ✅ | ✅ | ❌ |
+- `client.on('qr', (qrCode) => {})` - Când se generează un cod QR
+- `client.on('ready', () => {})` - Când clientul este gata de utilizare
+- `client.on('authenticated', () => {})` - Când autentificarea a reușit
+- `client.on('auth_failure', (error) => {})` - Când autentificarea a eșuat
+- `client.on('disconnected', (reason) => {})` - Când conexiunea s-a închis
+- `client.on('message', (message) => {})` - Când se primește un mesaj
 
 ## Licență
 
-Acest proiect este licențiat sub [Licența MIT](LICENSE).
-
-## Contribuții
-
-Contribuțiile sunt binevenite! Vă rugăm să consultați [ghidul de contribuție](CONTRIBUTING.md) pentru mai multe detalii.
-
-## Disclaimer
-
-Acest proiect nu este afiliat, asociat, autorizat, aprobat de, sau în vreun fel conectat oficial cu WhatsApp sau oricare dintre subsidiarele sau afiliații săi. Site-ul oficial al WhatsApp poate fi găsit la https://whatsapp.com. "WhatsApp" precum și numele și mărcile asociate sunt mărci comerciale înregistrate ale proprietarilor respectivi.
-
----
-
-Realizat cu ❤️ de [gyovannyvpn123](https://github.com/gyovannyvpn123)
+MIT
